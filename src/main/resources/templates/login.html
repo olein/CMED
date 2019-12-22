@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+
+</head>
+<body>
+<div th:replace="fragments :: header"></div>
+
+
+<div id="form">
+
+    <div class="wrapper fadeInDown">
+        <div id="formContent">
+            <p v-if="errors.length">
+                <b>Please correct the following error(s):</b>
+            <ul>
+                <li v-for="error in errors">{{ error }}</li>
+            </ul>
+            </p>
+
+            <span id="message" th:text="${message}"></span>
+
+            <form action="/cmed/login" @submit="checkForm" method="post">
+                <input type="text"  class="fadeIn second" name="userName" id="userName" v-model="userName" value="Admin">
+                <input type="password" class="fadeIn second" name="password" id="password" v-model="password" value="admin">
+                <input type="submit" class="fadeIn fourth" value="Log In">
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments :: footer"></div>
+<script>
+    const form = new Vue({
+        el: '#form',
+        data: {
+            errors: [],
+            userName: 'Admin',
+            password: 'admin'
+        },
+        methods: {
+            checkForm: function (e) {
+                const that = this;
+
+                if (that.userName && that.password) return true;
+
+                e.preventDefault();
+
+                that.errors = [];
+                if (!that.userName) that.errors.push("User Name required.");
+                if (!that.password) that.errors.push("Password required.");
+                if (that.errors.length) return false;
+            }
+        }
+    })
+</script>
+</body>
+</html>

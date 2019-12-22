@@ -1,0 +1,572 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Home page</title>
+</head>
+
+<body>
+<div th:replace="fragments :: header"></div>
+
+<main id="home" role="main" class="container">
+
+    <div class="col-md-2 form-group">
+        <button type="button" @click="logout"
+                class="btn btn-primary btn-block">Logout</button>
+    </div>
+
+    <div v-if="errorOccurred">{{errorMessage}}</div>
+
+    <div v-if="prescriptionFound">
+
+        <div class="container-fluid bg-light">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-md-2 pt-2 form-group">
+                    <label for="startDate2">Start date</label>
+                </div>
+                <div class="col-md-3 pt-2 form-group">
+                    <input type="date" name="startDate" id="startDate2" v-model="startDate" />
+                </div>
+                <div class="col-md-2 pt-2 form-group">
+                    <label for="endDate2">End Date</label>
+                </div>
+                <div class="col-md-3 pt-2 form-group">
+                    <input type="date" name="endDate" id="endDate2" v-model="endDate"/>
+                </div>
+                <div class="col-md-2 form-group">
+                    <button type="button" @click="getPrescription"
+                            class="btn btn-primary btn-block">Submit</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid bg-light">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-md-4 pt-4 form-group">
+                    <button type="button" @click="prescriptionReport"
+                            class="btn btn-primary btn-block">Show Prescription Report</button><br/>
+                </div>
+
+                <div class="col-md-4 pt-4 form-group">
+                    <button type="button" @click="enableCreatePrescription"
+                            class="btn btn-primary btn-block">Create Prescription</button><br/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="prescriptionFound">
+        <table id="data-table" class="display" cellspacing="0" width="100%">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Diagnosis</th>
+                <th>Medicine</th>
+                <th>Prescription Date</th>
+                <th>Next visit Date</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(data,index) in prescriptionList">
+                <td>{{ data.prescriptionId }}</td>
+                <td>{{ data.patientName }}</td>
+                <td>{{ data.patientAge }}</td>
+                <td>{{ data.gender }}</td>
+                <td>{{ data.diagnosis }}</td>
+                <td>{{ data.medicine }}</td>
+                <td>{{ data.prescriptionDate }}</td>
+                <td>{{ data.nextVisitDate }}</td>
+                <td>
+                    <button type="button" @click="deletePrescription(data,index)"
+                            class="btn btn-primary btn-block">Delete</button>
+                    <button type="button" @click="enableUpdatePrescription(data,index)"
+                            class="btn btn-primary btn-block">Edit</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div v-if="prescriptionCreate">
+        <div class="col-md-2 pt-2 form-group">
+            <button type="button" @click="showPrescription"
+                    class="btn btn-primary btn-block">Go back</button><br/>
+        </div>
+        <div v-if="errors.length" class="row align-items-center justify-content-center">
+            <p >
+                <b>Please correct the following error(s):</b>
+                <ul>
+                    <li v-for="error in errors">{{ error }}</li>
+                </ul>
+            </p>
+        </div>
+
+        <div class="container-fluid bg-light fadeInDown">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="patientName">Patient Name</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <input type="text" name="patientName" id="patientName" v-model="patientName">
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="patientAge">Age</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <input type="number" name="patientAge" id="patientAge" v-model="patientAge">
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="gender">Gender</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <select  name="gender" id="gender" v-model="gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="diagnosis">Diagnosis</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <textarea type="text" name="diagnosis" id="diagnosis" v-model="diagnosis"></textarea>
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="nextVisitDate">Next Visit Date</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <input type="date" name="nextVisitDate" id="nextVisitDate" v-model="nextVisitDate"/>
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="medicine">Medicine</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <textarea type="text" name="medicine" id="medicine" v-model="medicine"></textarea>
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <button type="button" @click="createPrescription"
+                            class="btn btn-primary btn-block">Submit</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div v-if="prescriptionUpdate">
+        <div class="col-md-2 pt-2 form-group">
+            <button type="button" @click="showPrescription"
+                    class="btn btn-primary btn-block">Go back</button><br/>
+        </div>
+
+        <p v-if="errors.length">
+            <b>Please correct the following error(s):</b>
+        <ul>
+            <li v-for="error in errors">{{ error }}</li>
+        </ul>
+        </p>
+
+        <div class="container-fluid bg-light fadeInDown">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="patientName">Patient Name</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <input type="text" name="patientName" id="patientName" v-model="patientName">
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="patientAge">Age</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <input type="number" name="patientAge" id="patientAge" v-model="patientAge">
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="gender">Gender</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <select name="gender" id="gender" v-model="gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="diagnosis">Diagnosis</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <textarea type="text" name="diagnosis" id="diagnosis" v-model="diagnosis"></textarea>
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="nextVisitDate">Next Visit Date</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <input type="date" name="nextVisitDate" id="nextVisitDate" v-model="nextVisitDate"/>
+                </div>
+
+                <div class="col-md-4 pt-2 form-group">
+                    <label for="medicine">Medicine</label>
+                </div>
+                <div class="col-md-6 pt-2 form-group">
+                    <textarea type="text" name="medicine" id="medicine" v-model="medicine"></textarea>
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <button type="button" @click="updatePrescription"
+                            class="btn btn-primary btn-block">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="reportFound"  width="50%">
+        <div class="col-md-2 pt-2 form-group">
+            <button type="button" @click="showPrescription"
+                    class="btn btn-primary btn-block">Go back</button><br/>
+        </div>
+        <table id="data-table" cellspacing="0" width="100%" align="left">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Total Prescription</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(val, key) in report">
+                    <td>{{key}}</td>
+                    <td>{{val}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <span id="loginId" th:text="${loginId}" hidden></span> <br/>
+    <span id="userId" th:text="${userId}" hidden></span> <br/>
+</main>
+
+<div th:replace="fragments :: footer"></div>
+<div th:replace="fragments :: data-table"></div>
+<script>
+    new Vue({
+        el: '#home',
+        data: {
+            errors: [],
+
+            loginId: "",
+            userId: "",
+            prescriptionList: "",
+            startDate:'',
+            endDate:'',
+
+            prescriptionId:0,
+            patientName:'',
+            patientAge:'',
+            gender:'',
+            diagnosis:'',
+            medicine:'',
+            nextVisitDate:'',
+            prescription:'',
+            index:-1,
+            errorMessage:'',
+            report:'',
+
+            prescriptionFound:false,
+            prescriptionCreate:false,
+            prescriptionUpdate:false,
+            loggedIn:true,
+            errorOccurred:false,
+            reportFound:false
+        },
+
+        created: function () {
+            this.getPrescription()
+//            this.getJson()
+        },
+
+        updated: function () {
+            this.dataTableConfigure()
+        },
+
+        methods: {
+            getPrescription: function () {
+                const that = this;
+
+                that.loginId = document.getElementById("loginId").textContent;
+                that.userId = document.getElementById("userId").textContent;
+
+                var today = new Date();
+                let mm = today.getMonth()+1;
+                let yyyy = today.getFullYear();
+
+                if(that.startDate=='' || that.endDate == '') {
+                    that.startDate = yyyy + '-' + mm + '-01';
+                    that.endDate = yyyy + '-' + mm + '-31';
+                }
+
+                let prescriptionSearch = {
+                    loginId: that.loginId,
+                    userId: that.userId,
+                    startDate: that.startDate,
+                    endDate: that.endDate
+                }
+
+                fetch('./getPrescriptionList', {
+                    method: 'post',
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify(prescriptionSearch)
+                })
+                    .then((resp) => resp.json())
+                    .then(function (data) {
+                        console.log(data);
+                        that.prescriptionList = data.prescriptionList;
+                        that.loggedIn = data.isLoggedIn;
+                        that.prescriptionFound = true;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+
+            enableCreatePrescription: function () {
+                const that = this;
+                that.prescriptionFound = false;
+                that.prescriptionCreate = true;
+                that.prescriptionUpdate = false;
+
+                that.prescriptionId='';
+                that.loginId= '';
+                that.userId= '';
+                that.patientName= '';
+                that.patientAge= '';
+                that.gender= '';
+                that.diagnosis= '';
+                that.medicine= '';
+                that.nextVisitDate= '';
+                that.index = -1;
+            },
+
+            enableUpdatePrescription: function (data,index) {
+                const that = this;
+                that.prescriptionFound = false;
+                that.prescriptionCreate = false;
+                that.prescriptionUpdate = true;
+
+                that.prescriptionId=data.prescriptionId;
+                that.loginId= data.loginId;
+                that.userId= data.userId;
+                that.patientName=data.patientName;
+                that.patientAge=data.patientAge;
+                that.gender=data.gender;
+                that.diagnosis=data.diagnosis;
+                that.medicine=data.medicine;
+                that.nextVisitDate=data.nextVisitDate;
+                that.index = index;
+            },
+
+            deletePrescription: function (data,index) {
+
+                var result = confirm("DO you really want to delete prescription?");
+                if(!result) return;
+
+                const that = this;
+                console.log(data);
+                var url = './deletePrescription/'+data.prescriptionId;
+                console.log(url);
+                fetch(url)
+                    .then((resp) => resp.json())
+                    .then(function (data) {
+
+                        that.prescriptionFound = true;
+                        that.prescriptionCreate=false;
+                        that.prescriptionUpdate=false;
+                        if(data) {
+                            that.prescriptionList.splice(index, 1);
+                        } else {
+                            that.errorOccurred = true;
+                            that.errorMessage = 'Could not delete data';
+                            that.prescriptionFound = true;
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        that.errorOccurred = true;
+                        that.errorMessage = 'Could not delete data';
+                        that.prescriptionFound = true;
+                    });
+
+
+            },
+
+            createPrescription: function () {
+                const that = this;
+
+                that.errors = [];
+
+                if (!that.patientName) that.errors.push("Patient name required");
+                if (!that.patientAge) that.errors.push("Patient Age required");
+                if (!that.gender) that.errors.push("Gender required");
+
+                if (that.errors.length) {
+
+                    return false;
+                }
+
+                that.loginId = document.getElementById("loginId").textContent;
+                that.userId = document.getElementById("userId").textContent;
+
+                let prescriptionRequest = {
+                    loginId: that.loginId,
+                    userId: that.userId,
+                    patientName:that.patientName,
+                    patientAge:that.patientAge,
+                    gender:that.gender,
+                    diagnosis:that.diagnosis,
+                    medicine:that.medicine,
+                    nextVisitDate:that.nextVisitDate
+                }
+
+                fetch('./createOrUpdatePrescription', {
+                    method: 'post',
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify(prescriptionRequest)
+                })
+                    .then((resp) => resp.json())
+                    .then(function (data) {
+                        console.log(data);
+                        that.prescription = data;
+                        that.prescriptionList.push(that.prescription);
+                        that.prescriptionFound = true;
+                        that.prescriptionCreate=false;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+
+            updatePrescription: function () {
+                const that = this;
+
+                that.errors = [];
+
+                if (!that.patientName) that.errors.push("Patient name required");
+                if (!that.patientAge) that.errors.push("Patient Age required");
+                if (!that.gender) that.errors.push("Gender required");
+
+                if (that.errors.length) return false;
+
+                that.loginId = document.getElementById("loginId").textContent;
+                that.userId = document.getElementById("userId").textContent;
+
+                let prescriptionUpdateRequest = {
+                    prescriptionId:that.prescriptionId,
+                    loginId: that.loginId,
+                    userId: that.userId,
+                    patientName:that.patientName,
+                    patientAge:that.patientAge,
+                    gender:that.gender,
+                    diagnosis:that.diagnosis,
+                    medicine:that.medicine,
+                    nextVisitDate:that.nextVisitDate
+                }
+
+                fetch('./createOrUpdatePrescription', {
+                    method: 'post',
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify(prescriptionUpdateRequest)
+                })
+                .then((resp) => resp.json())
+                .then(function (data) {
+                    console.log(data);
+                    that.prescription = data;
+                    that.prescriptionFound = true;
+                    that.prescriptionCreate=false;
+                    that.prescriptionUpdate = false;
+                    that.prescriptionList.splice(that.index, 1, that.prescription);
+                    that.index = -1;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            },
+
+            prescriptionReport: function () {
+                const that = this;
+                fetch('./prescriptionReport')
+                    .then((resp) => resp.json())
+                    .then(function (data) {
+                        console.log(data);
+                        that.prescriptionFound = false;
+                        that.prescriptionCreate=false;
+                        that.prescriptionUpdate=false;
+                        that.reportFound = true;
+                        that.report = data;
+
+//                        for (var key in data) {
+//                            if (data.hasOwnProperty(key)) {
+//                                console.log(key +' '+data[key]);
+//                            }
+//                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        that.errorOccurred = true;
+                        that.errorMessage = 'Could not generate report';
+                        that.prescriptionFound = true;
+                    });
+
+
+            },
+
+            showPrescription: function () {
+                    this.prescriptionFound=true;
+                    this.reportFound=false;
+                    this.prescriptionCreate=false;
+                    this.prescriptionUpdate=false;
+            },
+
+            logout:function () {
+                const that = this;
+                that.loginId = '';
+                that.userId = '';
+                that.loggedIn = false;
+                window.location.href = './';
+            },
+
+//            getJson:function () {
+//
+//                fetch('https://rxnav.nlm.nih.gov/REST/interaction/interaction.json?rxcui=341248')
+//                    .then((resp) => resp.json())
+//                    .then(function (data) {
+//                        console.log(data);
+//                    })
+//                    .catch(function (error) {
+//                        console.log(error);
+//                    });
+//            },
+
+            dataTableConfigure: function () {
+                $('#data-table').DataTable();
+            }
+        }
+    })
+</script>
+
+</body>
+</html>
